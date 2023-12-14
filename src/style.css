@@ -19,7 +19,7 @@ input {
 
 input::placeholder {
   outline: none;
-  color: 1px solid rgba(255, 255, 255, 0.577);
+  border-color: 1px solid rgba(255, 255, 255, 0.577);
 }
 
 .search-btn {
