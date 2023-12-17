@@ -41,10 +41,10 @@ async function onSubmit(event) {
             Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`)
             gallery.insertAdjacentHTML("beforeend", createMarkup(data.hits))
         
-        if (page <= maxPages) {
+        if (page < maxPages) {
             observer.observe(guard);
         }
-        if (page > maxPages) {
+        if (page >= maxPages) {
             observer.unobserve(guard)
             Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.")
         }
@@ -52,7 +52,6 @@ async function onSubmit(event) {
     } catch (error) {
         console.log(error)
     }
-
     lightbox.refresh()
     form.reset()
 }
@@ -67,20 +66,23 @@ async function getArray(category, page) {
     }
 }
 
-function handlePagination(entries, observer) {
-    if (entries[0].isIntersecting) {
-        page += 1
-        getArray(searchItem, page)
-            .then(data => {
-                if (page <= maxPages) {
-                    gallery.insertAdjacentHTML('beforeend', createMarkup(data.hits))
-                    lightbox.refresh();
-                }
-                else {
-                    observer.unobserve(guard)
-                    Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.")
-                }
-            })
-            .catch(error=> console.log('Error message', error))
+async function handlePagination(entries, observer) {
+    if (entries[0].isIntersecting && page < maxPages) {
+        try {
+            page += 1
+            const data = await getArray(searchItem, page)
+            if (page <= maxPages) {
+                gallery.insertAdjacentHTML('beforeend', createMarkup(data.hits))
+                lightbox.refresh();
+            } else {
+                observer.unobserve(guard)
+            }
+        } catch (error) {
+            console.log('Error message', error)
+        }
+    }
+    if (page >= maxPages) {
+        observer.unobserve(guard)
+        Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.")
     }
 }
